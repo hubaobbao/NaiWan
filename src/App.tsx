@@ -5,24 +5,26 @@ import {useBeforeMount} from "./utils/hooks.ts";
 
 function App() {
     const [isInsert, setIsInsert] = useState(false);
+    const [flashKey, setFlashKey] = useState(0);
 
     useBeforeMount(() => {
+        const playAlarm = () => {
+            const audio = new Audio(AlarmAudio);
+            audio.currentTime = 0;
+            void audio.play();
+            setFlashKey(prev => prev + 1);
+        }
         const keyboardHandler = (event: KeyboardEvent) => {
             if (event.key === 'Insert') {
                 setIsInsert(prev => !prev);
                 return;
             }
             if (event.key.length === 1 || event.key === 'Enter' || event.key === 'Backspace') {
-                const audio = new Audio(AlarmAudio);
-                audio.pause();
-                audio.currentTime = 0;
-                void audio.play();
+                playAlarm();
             }
         }
         const touchHandler = () => {
-            const audio = new Audio(AlarmAudio);
-            audio.currentTime = 0;
-            void audio.play();
+            playAlarm();
         }
         document.addEventListener('keydown', keyboardHandler);
         document.addEventListener('touchstart', touchHandler);
@@ -127,7 +129,25 @@ function App() {
                     <div css={css`
                         margin-top: 2em;
                         font-size: clamp(0.9rem, 2vw, 1.1rem);
-                    `}>Press ANY key to continue</div>
+                    `}>
+                        Press
+                        <span key={flashKey} css={[css`
+                            padding: 0.1em 1ch;
+                        `, flashKey > 0 && css`
+                            @keyframes terminalFlash {
+                                0%, 49% {
+                                    background: #9cf;
+                                    color: #001;
+                                }
+                                50%, 100% {
+                                    background: transparent;
+                                    color: inherit;
+                                }
+                            }
+                            animation: terminalFlash 0.18s steps(1, end) 2;
+                        `]}>ANY</span>
+                        key to continue
+                    </div>
                 </div>
                 <div css={css`
                     margin-bottom: 2em;
